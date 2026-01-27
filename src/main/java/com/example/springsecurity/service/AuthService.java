@@ -104,6 +104,9 @@ public class AuthService {
         if (user.getUserName() != null)
             existingUser.setUserName(user.getUserName());
 
+        if (user.getEmail() != null)
+            existingUser.setEmail(user.getEmail());
+
         if (user.getPassword() != null)
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
 

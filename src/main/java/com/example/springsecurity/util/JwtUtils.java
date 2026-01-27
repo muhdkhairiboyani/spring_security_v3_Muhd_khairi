@@ -2,6 +2,8 @@ package com.example.springsecurity.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,17 +18,28 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
+    @Value("${app.secret}")
+    private String secretString;
     private SecretKey secretKey;
 
     // Manage the expiration duration
     public static final long EXPIRATION_TIME = 60 * 24 * 60 * 1000; // 86400000 milliseconds = 24 hours
 
-    // generate a message authentication code (MAC) using the secret key in combination with the SHA-256 hash function.
-    public JwtUtils() {
-        // Manage the secret
-        String secretString = "f2a8c3d9e5b7a1c4d2e8f0a3b6c9d5e7f1a4b8c2d6e0f3a7b9c1d5e8f2a4b6c8";
+    // Generate a message authentication code (MAC) using the secret key with the SHA-256 hash function.
+    // As dependency injection (including @Value resolution) happens only the constructor is called,
+    // when JwtUtils() constructor runs, Spring hasn't injected the environment variables yet.
+    // Annotating @PostConstruct tells Spring to run its logic only after:
+    //      1. bean is fully initialized, and
+    //      2. all values are injected
+    @PostConstruct
+    public void init() {
+        // Manage the secret from application.properties
         byte[] keyBytes = Base64.getDecoder().decode(secretString.getBytes(StandardCharsets.UTF_8));
         this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
+    }
+
+    public JwtUtils() {
+
     }
 
     // takes in the user's details to generate the JWT token with an expiration duration of 24 hours
